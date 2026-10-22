@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="500" viewBox="0 0 1100 500" role="img" aria-labelledby="title desc">
+  <title id="title">Unitree Go2 EDU top view</title>
+  <desc id="desc">The head is on the left and contains the integrated LiDAR and camera. The tail face on the right contains a 28.8 volt output, SBUS and RJ45.</desc>
+  <defs><style>
+    .body{fill:#f8fafc;stroke:#172033;stroke-width:4}.panel{fill:#e8eef7;stroke:#172033;stroke-width:3}.port{fill:#fff;stroke:#42526b;stroke-width:2}.line{stroke:#42526b;stroke-width:2;fill:none}.title{font:600 24px system-ui,sans-serif;fill:#111827}.label{font:500 18px system-ui,sans-serif;fill:#111827}.small{font:400 16px system-ui,sans-serif;fill:#374151}.tiny{font:400 14px system-ui,sans-serif;fill:#4b5563}
+  </style></defs>
+
+  <rect class="body" x="235" y="70" width="650" height="360" rx="14"/>
+  <rect class="panel" x="90" y="145" width="145" height="210" rx="10"/>
+  <text class="title" x="162" y="185" text-anchor="middle">Integrated</text>
+  <text class="label" x="162" y="210" text-anchor="middle">head sensors</text>
+  <text class="label" x="162" y="248" text-anchor="middle">4D LiDAR L1</text>
+  <text class="label" x="162" y="280" text-anchor="middle">Wide-angle</text><text class="label" x="162" y="306" text-anchor="middle">camera</text>
+  <text class="tiny" x="162" y="334" text-anchor="middle">not external ports</text>
+
+  <text class="title" x="300" y="125">GO2 EDU</text>
+  <rect class="panel" x="360" y="165" width="330" height="125" rx="10"/>
+  <text class="label" x="525" y="207" text-anchor="middle">Internal Go2 controller</text>
+  <text class="small" x="525" y="239" text-anchor="middle">Unitree services and sensor data</text>
+  <text class="small" x="525" y="268" text-anchor="middle">typically 192.168.123.161</text>
+  <text class="small" x="525" y="340" text-anchor="middle">Wi-Fi 6 · Bluetooth · 4G/GPS · UWB/remote</text>
+  <text class="tiny" x="525" y="380" text-anchor="middle">IMU and foot-force sensors are internal</text>
+
+  <rect class="panel" x="885" y="105" width="165" height="290" rx="10"/>
+  <text class="title" x="967" y="145" text-anchor="middle">Go2 ports</text><text class="tiny" x="967" y="172" text-anchor="middle">on the tail face</text>
+  <rect class="port" x="918" y="197" width="99" height="43" rx="6"/><text class="label" x="967" y="225" text-anchor="middle">28,8 V OUT</text>
+  <rect class="port" x="918" y="259" width="99" height="43" rx="6"/><text class="label" x="967" y="287" text-anchor="middle">SBUS</text>
+  <rect class="port" x="918" y="321" width="99" height="43" rx="6"/><text class="label" x="967" y="349" text-anchor="middle">RJ45</text>
+</svg>
