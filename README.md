@@ -41,7 +41,7 @@ Quickly gain insight in Go2 EDU + expansion dock:
 Connecting a display screen requires a **USB-C-to-HDMI** adapter.
 
 ![Connection a display screen](img/orin_monitor_usb_hdmi.png)
-
+[Unitree Expansion dock config](https://support.unitree.com/home/en/developer/module_update)
 ### Connection
 
 Expansion dock (orin) connects to  Go2 by power cable (28.8 V DC) and ethernet.
