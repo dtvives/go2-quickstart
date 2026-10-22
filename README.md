@@ -1,6 +1,6 @@
 # Unitree Go2 EDU + Orin quickstart
 
-Quickly gain insight in Go2 EDU + expansion dock:
+Getting started with Go2 EDU + expansion dock:
 - interfaces
 - how to connect
 - how to backup
