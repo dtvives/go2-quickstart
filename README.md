@@ -5,12 +5,17 @@ Getting started with Go2 EDU + expansion dock:
 - how to connect
 - how to backup
 
+The expansion dock is Jetson Orin Nano, **ARM64** architecture.
+
 ![Go2 EDU top view](img/orin_dock_install_small.png)
 
 [Unitree Payload documentation](https://support.unitree.com/home/en/developer/Payload)
 
 
 ## System architecture
+
+The Go2 has WiFi, 4G, BLE, on the main board, intended to interact with the app. **These are not accessible from the expansion dock (Jetson Orin).**
+
 ![Unitree Go2 system architecture](img/architecture_overview.jpg)
 
 [Unitree Architecture Description](https://support.unitree.com/home/en/developer/Architecture%20Description)
