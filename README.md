@@ -14,7 +14,7 @@ The expansion dock is Jetson Orin Nano, **ARM64** architecture.
 
 ## System architecture
 
-The Go2 has WiFi, 4G, BLE, on the main board, intended to interact with the app. **These are not accessible from the expansion dock (Jetson Orin).**
+The Go2 has WiFi, 4G, BLE, on the main board, intended to interact with the app. **These are NOT accessible from the expansion dock (Jetson Orin).**
 
 ![Unitree Go2 system architecture](img/architecture_overview.jpg)
 
@@ -60,15 +60,108 @@ Expansion dock (orin) connects to  Go2 by power cable (28.8 V DC) and ethernet.
 ```ssh unitree@192.168.123.18```
 default password: 123
 
-
-
 ### Interfaces
 
 | Interface | Description |
 |---|---|
-| DDS | **Data Distribution Service**: the Go2's publish/subscribe communication layer for sending commands and receiving robot data. Supported from C++ and Python through the **Unitree SDK**. |
+| DDS | **Data Distribution Service**: the Go2's publish/subscribe communication layer for sending commands and receiving robot data. Supported from C++ and Python through the **Unitree SDK**. (CycloneDDS) |
 | ROS 2 | Robotics middleware interface for using Go2 data and services as ROS 2 topics, services and messages. ROS 2 normally uses DDS underneath. |
 | GST | **GStreamer** interface used only for transmitting camera images/video; it is not a robot-control interface. |
+
+#### Go2 SDK
+
+##### Safety essentials
+
+- Check the firmware version. Use the V2 documentation for software V1.1.6 and later. Modes and commands may differ.
+- `SportClient` uses the high-level motion service. Disable this service only for intentional low-level motor control. `go2_stand_example.cpp` is a low-level example.
+- `StandUp()` means Standing Lock. Do not use as a long-term rest state. The motors may overheat. `StandDown()` (laying down) is also locked.
+- An RPC success means the command was accepted. It does not confirm the final pose. Wait for a new state update.
+- A timed-out command may still run. Do not retry it blindly or start an immediate recovery sequence.
+- Use one motion-command owner. Stop background loops before shutdown. They may keep sending `Euler()` or `Move()` commands.
+
+##### Requirements
+
+OS: Ubuntu 20.04 or 22.04
+
+WSL2 works but considered **unreliable** : 
+add the file %USERPROFILE%\.wslconfig
+with contents 
+```
+[wsl2]
+networkingMode=mirrored
+```
+
+##### V2 motion modes
+
+On V2 firmware, `SportModeState.error_code` may contain a motion mode. It is not always an RPC error or API ID.
+
+| Value | Mode |
+|---:|---|
+| `100` | Agile |
+| `1001` | Damping |
+| `1002` | Standing Lock |
+| `1013` | Balance Standing |
+| `1091` | Strike a Pose |
+
+##### Pose and stopping
+
+The official pose example repeats this sequence:
+
+```text
+Euler(target)
+BalanceStand()
+short pause
+```
+
+On normal exit, send `Euler(0, 0, 0)`. This sets a neutral target. It does not restore the exact starting pose. Wait for the robot and verify its state before changing modes.
+
+Keep these timings separate:
+
+- RPC timeout
+- command-loop interval
+- physical transition timeout
+
+There is no safe universal delay.
+
+`StopMove()` stops the current motion and resets motion parameters. It does not guarantee a neutral pose, joint lock, or relaxed motors. Do not run automatic recovery when the state is unknown, communication is lost, or a motor fails. Hand control to the operator.
+
+##### Controller mappings
+
+The table maps controller shortcuts to high-level `SportClient` commands. Availability depends on the model, firmware, and licenses.
+
+| Controller function | Controller shortcut | Go2 SDK command | Notes |
+|---|---|---|---|
+| Damping Mode / Emergency Stop | `L2 + B` | `Damp()` | Direct match. Stops all joint motion and enters damping mode. |
+| Stand Lock / Low Down | `L2 + A` | `StandDown()` / `StandUp()` | Context-dependent toggle between locked standing and low standing. |
+| Unlock / Default Gait | `START` | `BalanceStand()` | Unlocks the joints and enters balanced standing mode. |
+| Running | `L2 + START` | `TrotRun()` | Selects the running trot mode. |
+| Pose | `SELECT` | `Pose(true/false)` | Enables or disables pose mode. |
+| Normal | `L1 + START` | `StaticWalk()` | Probable SDK equivalent of the controller's normal walking mode. |
+| Classic | `D-pad right + START` | `ClassicWalk(true/false)` | Enables or disables classic walking. |
+| Free Walk | `D-pad down + START` | `FreeWalk()` | Selects free-walk mode. |
+| Free Avoid | Double-click `A` | `FreeAvoid(true/false)` | Enables or disables free walking with obstacle avoidance. |
+| Cross Step | Double-click `B` | `CrossStep(true/false)` | Enables or disables cross-step walking. |
+| Bound | Double-click `X` | `FreeBound(true/false)` | The controller guide combines Bound and Jump in one row; `X` is the probable Bound shortcut. |
+| Jump | Double-click `Y` | `FreeJump(true/false)` | The controller guide combines Bound and Jump in one row; `Y` is the probable Jump shortcut. |
+| Hand Stand | Double-click `R1` | `HandStand(true)` | Enters handstand mode. |
+| Erect / leave handstand | Double-click `R2` | `HandStand(false)` | Probable shortcut for leaving handstand mode. |
+| Endurance | `L1 + SELECT` | `EconomicGait()` | Selects the energy-saving/endurance gait. |
+| Stand up from a fall | `L2 + X` | `RecoveryStand()` | Recovers to a balanced standing position after falling or lying down. |
+| Stretch | `R2 + A` | `Stretch()` | Direct match. |
+| Shake Hands | `R2 + B` | `Hello()` | `Hello()` performs the paw-waving/handshake movement. |
+| Love | `R2 + Y` | `Heart()` | Named `Heart()` in the current SDK. |
+| Greet | `L1 + A` | `Scrape()` | Probable match for the SDK's greeting action. |
+| Jump Forward | `R1 + A` | `FrontJump()` | Direct match. |
+| Sit Down | `R1 + B` | `Sit()` | Enters the sitting position. |
+| Rise from sitting | Probably `R1 + B` again | `RiseSit()` | Not listed separately in the controller guide; likely context-dependent. |
+| Pounce | `R1 + X` | `FrontPounce()` | Direct match. |
+| Dance 1 | `L1 + B` | `Dance1()` | Direct match. |
+| Dance 2 | `L1 + X` | `Dance2()` | Direct match. |
+| Avoidance OFF/ON | Hold `Y` or `X` for 3 seconds | `SwitchAvoidMode()` | Switches the obstacle-avoidance mode. |
+| Searchlight Switch | `L2 + SELECT` | No `SportClient` equivalent | Lighting is not part of the high-level motion-control interface. |
+| Vibration/Buzzer Toggle | Press `F3` three times | No `SportClient` equivalent | Controller/audio function rather than a motion command. |
+
+Sources: [Motion Services V2](https://support.unitree.com/home/en/developer/Motion_Services_Interface_V2.0), [legacy Sports Services](https://support.unitree.com/home/en/developer/sports_services), and the [Unitree SDK2 `SportClient` interface](https://github.com/unitreerobotics/unitree_sdk2/blob/main/include/unitree/robot/go2/sport/sport_client.hpp).
 
 ## Orin filesystem
 
